@@ -1,0 +1,15 @@
+{
+  "name": "frida-screenshot",
+  "version": "1.0.0",
+  "description": "Grab screenshots using Frida",
+  "main": "index.js",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/viaforensics/frida-screenshot.git"
+  },
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/viaforensics/frida-screenshot/issues"
+  },
+  "homepage": "https://github.com/viaforensics/frida-screenshot#readme"
+}
