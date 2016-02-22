@@ -5,11 +5,11 @@
   "main": "index.js",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/viaforensics/frida-screenshot.git"
+    "url": "git+https://github.com/nowsecure/frida-screenshot.git"
   },
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/viaforensics/frida-screenshot/issues"
+    "url": "https://github.com/nowsecure/frida-screenshot/issues"
   },
-  "homepage": "https://github.com/viaforensics/frida-screenshot#readme"
+  "homepage": "https://github.com/nowsecure/frida-screenshot#readme"
 }
