@@ -3,6 +3,10 @@
   "version": "1.0.2",
   "description": "Grab screenshots using Frida",
   "main": "index.js",
+  "files": [
+    "index.js",
+    "lib/**/*.js"
+  ],
   "browserify": {
     "transform": [
       [
