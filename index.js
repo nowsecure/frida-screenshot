@@ -1,5 +1,3 @@
-'use strict';
-
 const ios = require('./lib/ios');
 
 const IOS = Symbol('ios');
