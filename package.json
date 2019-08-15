@@ -4,8 +4,8 @@
   "description": "Grab screenshots using Frida",
   "main": "index.js",
   "files": [
-    "index.js",
-    "lib/**/*.js"
+    "/index.js",
+    "/lib/**/*.js"
   ],
   "repository": {
     "type": "git",
