@@ -7,7 +7,7 @@ Grab screenshots using [Frida](http://frida.re).
 ```js
 const screenshot = require('frida-screenshot');
 
-const png = yield screenshot();
+const png = await screenshot();
 send({
   name: '+screenshot',
   payload: {
