@@ -1,9 +1,9 @@
-const ios = require('./lib/ios');
+import { ios } from './lib/ios.js';
 
 const IOS = Symbol('ios');
 const UNKNOWN = Symbol('unknown');
 
-module.exports = function (view) {
+export default function screenshot(view) {
   if (getOS() === IOS) {
     return ios(view);
   } else {

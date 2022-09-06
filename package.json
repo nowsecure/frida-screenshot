@@ -3,6 +3,7 @@
   "version": "3.0.3",
   "description": "Grab screenshots using Frida",
   "main": "index.js",
+  "type": "module",
   "files": [
     "/index.js",
     "/lib/**/*.js"
