@@ -1,6 +1,6 @@
 {
   "name": "frida-screenshot",
-  "version": "3.0.3",
+  "version": "4.0.0",
   "description": "Grab screenshots using Frida",
   "main": "index.js",
   "type": "module",
