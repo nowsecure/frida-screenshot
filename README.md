@@ -1,6 +1,6 @@
 # frida-screenshot
 
-Grab screenshots using [Frida](https://www.frida.re).
+Grab screenshots using [Frida](https://frida.re).
 
 ## Example
 
