@@ -1,9 +1,12 @@
 const CGFloat = (Process.pointerSize === 4) ? 'float' : 'double';
-const CGSize = [CGFloat, CGFloat];
+const CGSize: NativeFunctionArgumentType = [CGFloat, CGFloat];
 
-export function ios(view) {
-  return performOnMainThread(function () {
-    const api = getApi();
+export function ios(view: ObjC.Object): Promise<ArrayBuffer> {
+  return performOnMainThread(() => {
+    const api = getApi() as any;
+    if (api === null) {
+      throw new Error("Cannot retrieve the API");
+    }
 
     if (!view) {
       view = api.UIWindow.keyWindow();
@@ -19,13 +22,15 @@ export function ios(view) {
     api.UIGraphicsEndImageContext();
 
     const png = new ObjC.Object(api.UIImagePNGRepresentation(image));
-    return png.bytes().readByteArray(png.length());
+    const data: NativePointer = png.bytes();
+    return data.readByteArray(png.length())!;
   });
 };
 
-function performOnMainThread(action) {
-  return new Promise(function (resolve, reject) {
-    if (getApi().NSThread.isMainThread()) {
+function performOnMainThread<R>(action: () => R): Promise<R> {
+  return new Promise((resolve, reject) => {
+    const api = getApi();
+    if (api.NSThread.isMainThread()) {
       performAction();
     } else {
       ObjC.schedule(ObjC.mainQueue, performAction);
@@ -42,23 +47,32 @@ function performOnMainThread(action) {
   });
 }
 
-let cachedApi = null;
-function getApi() {
+interface ImageApi {
+  UIWindow: ObjC.Object;
+  NSThread: ObjC.Object;
+  UIGraphicsBeginImageContextWithOptions: any;
+  UIGraphicsEndImageContext: any;
+  UIGraphicsGetImageFromCurrentImageContext: any;
+  UIImagePNGRepresentation: any;
+};
+
+let cachedApi: ImageApi | null = null;
+function getApi(): ImageApi {
   if (cachedApi === null) {
     cachedApi = {
       UIWindow: ObjC.classes.UIWindow,
       NSThread: ObjC.classes.NSThread,
       UIGraphicsBeginImageContextWithOptions: new NativeFunction(
-          Module.findExportByName('UIKit', 'UIGraphicsBeginImageContextWithOptions'),
+          Module.getExportByName('UIKit', 'UIGraphicsBeginImageContextWithOptions'),
           'void', [CGSize, 'bool', CGFloat]),
       UIGraphicsEndImageContext: new NativeFunction(
-          Module.findExportByName('UIKit', 'UIGraphicsEndImageContext'),
+          Module.getExportByName('UIKit', 'UIGraphicsEndImageContext'),
           'void', []),
       UIGraphicsGetImageFromCurrentImageContext: new NativeFunction(
-          Module.findExportByName('UIKit', 'UIGraphicsGetImageFromCurrentImageContext'),
+          Module.getExportByName('UIKit', 'UIGraphicsGetImageFromCurrentImageContext'),
           'pointer', []),
       UIImagePNGRepresentation: new NativeFunction(
-          Module.findExportByName('UIKit', 'UIImagePNGRepresentation'),
+          Module.getExportByName('UIKit', 'UIImagePNGRepresentation'),
           'pointer', ['pointer'])
     };
   }
