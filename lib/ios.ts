@@ -41,7 +41,7 @@ function performOnMainThread<R>(action: () => R): Promise<R> {
     function performAction() {
       const application = api.UIApplication.sharedApplication();
       if (application === null) {
-        reject(new Error("app not ready"));
+        reject(new Error("App not ready"));
         return;
       }
 
