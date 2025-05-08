@@ -1,5 +1,6 @@
 const CGFloat = (Process.pointerSize === 4) ? 'float' : 'double';
 const CGSize: NativeFunctionArgumentType = [CGFloat, CGFloat];
+const blocks = new Set();
 
 export function ios(view: ObjC.Object): Promise<ArrayBuffer> {
   return performOnMainThread(() => {
@@ -37,12 +38,29 @@ function performOnMainThread<R>(action: () => R): Promise<R> {
     }
 
     function performAction() {
-      try {
-        const result = action();
-        resolve(result);
-      } catch (e) {
-        reject(e);
+      const application = api.UIApplication.sharedApplication();
+      if (application === null) {
+        reject(new Error("App not ready"));
+        return;
       }
+
+      const block = new ObjC.Block({
+        retType: 'void',
+        argTypes: [],
+        implementation: function () {
+          try {
+            const result = action();
+            resolve(result);
+          } catch (e) {
+            reject(e);
+          }
+          setTimeout(() => blocks.delete(block), 0);
+        }
+      });
+
+      blocks.add(block);
+
+      application["- _performBlockAfterCATransactionCommits:"](block);
     }
   });
 }
@@ -50,6 +68,7 @@ function performOnMainThread<R>(action: () => R): Promise<R> {
 interface ImageApi {
   UIWindow: ObjC.Object;
   NSThread: ObjC.Object;
+  UIApplication: ObjC.Object;
   UIGraphicsBeginImageContextWithOptions: any;
   UIGraphicsEndImageContext: any;
   UIGraphicsGetImageFromCurrentImageContext: any;
@@ -62,6 +81,7 @@ function getApi(): ImageApi {
     cachedApi = {
       UIWindow: ObjC.classes.UIWindow,
       NSThread: ObjC.classes.NSThread,
+      UIApplication: ObjC.classes.UIApplication,
       UIGraphicsBeginImageContextWithOptions: new NativeFunction(
           Module.getExportByName('UIKit', 'UIGraphicsBeginImageContextWithOptions'),
           'void', [CGSize, 'bool', CGFloat]),
