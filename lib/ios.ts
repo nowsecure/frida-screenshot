@@ -40,14 +40,14 @@ function performOnMainThread<R>(action: () => R): Promise<R> {
     function performAction() {
       const application = api.UIApplication.sharedApplication();
       if (application === null) {
-        reject(new Error("App not ready"));
+        reject(new Error("app not ready"));
         return;
       }
 
       const block = new ObjC.Block({
         retType: 'void',
         argTypes: [],
-        implementation: function () {
+        implementation() {
           try {
             const result = action();
             resolve(result);
@@ -57,7 +57,6 @@ function performOnMainThread<R>(action: () => R): Promise<R> {
           setTimeout(() => blocks.delete(block), 0);
         }
       });
-
       blocks.add(block);
 
       application["- _performBlockAfterCATransactionCommits:"](block);
@@ -66,9 +65,9 @@ function performOnMainThread<R>(action: () => R): Promise<R> {
 }
 
 interface ImageApi {
+  UIApplication: ObjC.Object;
   UIWindow: ObjC.Object;
   NSThread: ObjC.Object;
-  UIApplication: ObjC.Object;
   UIGraphicsBeginImageContextWithOptions: any;
   UIGraphicsEndImageContext: any;
   UIGraphicsGetImageFromCurrentImageContext: any;
@@ -79,9 +78,9 @@ let cachedApi: ImageApi | null = null;
 function getApi(): ImageApi {
   if (cachedApi === null) {
     cachedApi = {
+      UIApplication: ObjC.classes.UIApplication,
       UIWindow: ObjC.classes.UIWindow,
       NSThread: ObjC.classes.NSThread,
-      UIApplication: ObjC.classes.UIApplication,
       UIGraphicsBeginImageContextWithOptions: new NativeFunction(
           Module.getExportByName('UIKit', 'UIGraphicsBeginImageContextWithOptions'),
           'void', [CGSize, 'bool', CGFloat]),
