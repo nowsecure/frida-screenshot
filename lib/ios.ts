@@ -1,5 +1,6 @@
 const CGFloat = (Process.pointerSize === 4) ? 'float' : 'double';
 const CGSize: NativeFunctionArgumentType = [CGFloat, CGFloat];
+
 const blocks = new Set();
 
 export function ios(view: ObjC.Object): Promise<ArrayBuffer> {
