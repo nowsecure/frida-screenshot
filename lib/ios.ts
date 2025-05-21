@@ -1,3 +1,5 @@
+import ObjC from "frida-objc-bridge";
+
 const CGFloat = (Process.pointerSize === 4) ? 'float' : 'double';
 const CGSize: NativeFunctionArgumentType = [CGFloat, CGFloat];
 
@@ -83,16 +85,16 @@ function getApi(): ImageApi {
       UIWindow: ObjC.classes.UIWindow,
       NSThread: ObjC.classes.NSThread,
       UIGraphicsBeginImageContextWithOptions: new NativeFunction(
-          Module.getExportByName('UIKit', 'UIGraphicsBeginImageContextWithOptions'),
+          Process.getModuleByName('UIKit').getExportByName('UIGraphicsBeginImageContextWithOptions'),
           'void', [CGSize, 'bool', CGFloat]),
       UIGraphicsEndImageContext: new NativeFunction(
-          Module.getExportByName('UIKit', 'UIGraphicsEndImageContext'),
+          Process.getModuleByName('UIKit').getExportByName('UIGraphicsEndImageContext'),
           'void', []),
       UIGraphicsGetImageFromCurrentImageContext: new NativeFunction(
-          Module.getExportByName('UIKit', 'UIGraphicsGetImageFromCurrentImageContext'),
+          Process.getModuleByName('UIKit').getExportByName('UIGraphicsGetImageFromCurrentImageContext'),
           'pointer', []),
       UIImagePNGRepresentation: new NativeFunction(
-          Module.getExportByName('UIKit', 'UIImagePNGRepresentation'),
+          Process.getModuleByName('UIKit').getExportByName('UIImagePNGRepresentation'),
           'pointer', ['pointer'])
     };
   }

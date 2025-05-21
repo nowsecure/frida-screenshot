@@ -1,3 +1,4 @@
+import ObjC from "frida-objc-bridge";
 import { ios } from './lib/ios.js';
 
 const IOS = Symbol('ios');
