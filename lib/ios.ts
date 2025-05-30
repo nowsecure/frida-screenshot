@@ -80,21 +80,22 @@ interface ImageApi {
 let cachedApi: ImageApi | null = null;
 function getApi(): ImageApi {
   if (cachedApi === null) {
+    const uikit = Process.getModuleByName('UIKit');
     cachedApi = {
       UIApplication: ObjC.classes.UIApplication,
       UIWindow: ObjC.classes.UIWindow,
       NSThread: ObjC.classes.NSThread,
       UIGraphicsBeginImageContextWithOptions: new NativeFunction(
-          Process.getModuleByName('UIKit').getExportByName('UIGraphicsBeginImageContextWithOptions'),
+          uikit.getExportByName('UIGraphicsBeginImageContextWithOptions'),
           'void', [CGSize, 'bool', CGFloat]),
       UIGraphicsEndImageContext: new NativeFunction(
-          Process.getModuleByName('UIKit').getExportByName('UIGraphicsEndImageContext'),
+          uikit.getExportByName('UIGraphicsEndImageContext'),
           'void', []),
       UIGraphicsGetImageFromCurrentImageContext: new NativeFunction(
-          Process.getModuleByName('UIKit').getExportByName('UIGraphicsGetImageFromCurrentImageContext'),
+          uikit.getExportByName('UIGraphicsGetImageFromCurrentImageContext'),
           'pointer', []),
       UIImagePNGRepresentation: new NativeFunction(
-          Process.getModuleByName('UIKit').getExportByName('UIImagePNGRepresentation'),
+          uikit.getExportByName('UIImagePNGRepresentation'),
           'pointer', ['pointer'])
     };
   }
