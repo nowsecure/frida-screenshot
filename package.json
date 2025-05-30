@@ -27,6 +27,6 @@
     "typescript": "^4.7.3"
   },
   "dependencies": {
-    "frida-objc-bridge": "^8.0.0"
+    "frida-objc-bridge": "^8.0.4"
   }
 }
