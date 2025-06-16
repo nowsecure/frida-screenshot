@@ -2,6 +2,9 @@
   "name": "frida-screenshot",
   "version": "6.0.0",
   "description": "Grab screenshots using Frida",
+  "keywords": [
+    "frida-gum"
+  ],
   "main": "dist/index.js",
   "type": "module",
   "files": [
