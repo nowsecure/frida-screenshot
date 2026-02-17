@@ -19,15 +19,16 @@ export function ios(view: ObjC.Object, options: ScreenshotOptions | undefined): 
 
     const format = api.UIGraphicsImageRendererFormat.preferredFormat();
 
-    if (options?.constrainSize !== undefined) {
-      if (typeof options.constrainSize !== "number" || options.constrainSize <= 0) {
+    const constrainSize = options?.constrainSize;
+    if (constrainSize !== undefined) {
+      if (typeof constrainSize !== "number" || constrainSize <= 0) {
         throw new Error("Invalid constrainSize value");
       }
 
       const maxDimension = Math.max(size[0], size[1]);
       const scale: number = format.scale().valueOf();
-      if (maxDimension * scale > options.constrainSize) {
-        format.setScale_(options.constrainSize / maxDimension);
+      if (maxDimension * scale > constrainSize) {
+        format.setScale_(constrainSize / maxDimension);
       }
     }
 
