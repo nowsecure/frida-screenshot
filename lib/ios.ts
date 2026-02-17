@@ -1,11 +1,9 @@
 import ObjC from "frida-objc-bridge";
-
-const CGFloat = (Process.pointerSize === 4) ? 'float' : 'double';
-const CGSize: NativeFunctionArgumentType = [CGFloat, CGFloat];
+import { ScreenshotOptions } from "../index.js";
 
 const blocks = new Set();
 
-export function ios(view: ObjC.Object): Promise<ArrayBuffer> {
+export function ios(view: ObjC.Object, options: ScreenshotOptions | undefined): Promise<ArrayBuffer> {
   return performOnMainThread(() => {
     const api = getApi() as any;
     if (api === null) {
@@ -18,13 +16,34 @@ export function ios(view: ObjC.Object): Promise<ArrayBuffer> {
 
     const bounds = view.bounds();
     const size = bounds[1];
-    api.UIGraphicsBeginImageContextWithOptions(size, 0, 0);
 
-    view.drawViewHierarchyInRect_afterScreenUpdates_(bounds, true);
+    const format = api.UIGraphicsImageRendererFormat.preferredFormat();
 
-    const image = api.UIGraphicsGetImageFromCurrentImageContext();
-    api.UIGraphicsEndImageContext();
+    if (options?.constrainSize !== undefined) {
+      if (typeof options.constrainSize !== "number" || options.constrainSize <= 0) {
+        throw new Error("Invalid constrainSize value");
+      }
 
+      const maxDimension = Math.max(size[0], size[1]);
+      const scale: number = format.scale().valueOf();
+      if (maxDimension * scale > options.constrainSize) {
+        format.setScale_(options.constrainSize / maxDimension);
+      }
+    }
+
+    const renderer = api.UIGraphicsImageRenderer.alloc().initWithSize_format_(size, format).autorelease();
+    const actionBlock = new ObjC.Block({
+      argTypes: ["object"],
+      retType: "void",
+      implementation: () => {
+        view.drawViewHierarchyInRect_afterScreenUpdates_(bounds, true);
+        setTimeout(() => blocks.delete(actionBlock), 0);
+      }
+    });
+
+    blocks.add(actionBlock);
+
+    const image = renderer.imageWithActions_(actionBlock);
     const png = new ObjC.Object(api.UIImagePNGRepresentation(image));
     const data: NativePointer = png.bytes();
     return data.readByteArray(png.length())!;
@@ -48,7 +67,7 @@ function performOnMainThread<R>(action: () => R): Promise<R> {
       }
 
       const block = new ObjC.Block({
-        retType: 'void',
+        retType: "void",
         argTypes: [],
         implementation() {
           try {
@@ -71,32 +90,24 @@ interface ImageApi {
   UIApplication: ObjC.Object;
   UIWindow: ObjC.Object;
   NSThread: ObjC.Object;
-  UIGraphicsBeginImageContextWithOptions: any;
-  UIGraphicsEndImageContext: any;
-  UIGraphicsGetImageFromCurrentImageContext: any;
+  UIGraphicsImageRendererFormat: ObjC.Object;
+  UIGraphicsImageRenderer: ObjC.Object;
   UIImagePNGRepresentation: any;
 };
 
 let cachedApi: ImageApi | null = null;
 function getApi(): ImageApi {
   if (cachedApi === null) {
-    const uikit = Process.getModuleByName('UIKit');
+    const uikit = Process.getModuleByName("UIKit");
     cachedApi = {
       UIApplication: ObjC.classes.UIApplication,
       UIWindow: ObjC.classes.UIWindow,
+      UIGraphicsImageRendererFormat: ObjC.classes.UIGraphicsImageRendererFormat,
+      UIGraphicsImageRenderer: ObjC.classes.UIGraphicsImageRenderer,
       NSThread: ObjC.classes.NSThread,
-      UIGraphicsBeginImageContextWithOptions: new NativeFunction(
-          uikit.getExportByName('UIGraphicsBeginImageContextWithOptions'),
-          'void', [CGSize, 'bool', CGFloat]),
-      UIGraphicsEndImageContext: new NativeFunction(
-          uikit.getExportByName('UIGraphicsEndImageContext'),
-          'void', []),
-      UIGraphicsGetImageFromCurrentImageContext: new NativeFunction(
-          uikit.getExportByName('UIGraphicsGetImageFromCurrentImageContext'),
-          'pointer', []),
       UIImagePNGRepresentation: new NativeFunction(
-          uikit.getExportByName('UIImagePNGRepresentation'),
-          'pointer', ['pointer'])
+          uikit.getExportByName("UIImagePNGRepresentation"),
+          "pointer", ["pointer"])
     };
   }
   return cachedApi;
