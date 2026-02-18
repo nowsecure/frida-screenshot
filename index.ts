@@ -4,9 +4,9 @@ import { ios } from './lib/ios.js';
 const IOS = Symbol('ios');
 const UNKNOWN = Symbol('unknown');
 
-export default function screenshot(view: ObjC.Object): Promise<ArrayBuffer> {
+export default function screenshot(view: ObjC.Object, options?: ScreenshotOptions): Promise<ArrayBuffer> {
   if (getOS() === IOS) {
-    return ios(view);
+    return ios(view, options);
   } else {
     return new Promise(function (_, reject) {
       reject(new Error('Not yet implemented for this OS'));
@@ -28,4 +28,8 @@ function detectOS(): symbol {
   } else {
     return UNKNOWN;
   }
+}
+
+export interface ScreenshotOptions {
+  constrainSize?: number;
 }
