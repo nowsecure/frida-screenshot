@@ -4,6 +4,8 @@ import { ScreenshotOptions } from "../index.js";
 const blocks = new Set();
 
 export function ios(view: ObjC.Object, options: ScreenshotOptions | undefined): Promise<ArrayBuffer> {
+  view?.retain();
+  let keyWindow: ObjC.Object | null = null;
   return performOnMainThread(() => {
     const api = getApi() as any;
     if (api === null) {
@@ -11,10 +13,12 @@ export function ios(view: ObjC.Object, options: ScreenshotOptions | undefined): 
     }
 
     if (!view) {
-      view = api.UIWindow.keyWindow();
+      keyWindow = api.UIWindow.keyWindow();
+      keyWindow?.retain();
     }
+    const target = view ? view : keyWindow!;
 
-    const bounds = view.bounds();
+    const bounds = target.bounds();
     const size = bounds[1];
 
     const format = api.UIGraphicsImageRendererFormat.preferredFormat();
@@ -37,7 +41,7 @@ export function ios(view: ObjC.Object, options: ScreenshotOptions | undefined): 
       argTypes: ["object"],
       retType: "void",
       implementation: () => {
-        view.drawViewHierarchyInRect_afterScreenUpdates_(bounds, true);
+        target.drawViewHierarchyInRect_afterScreenUpdates_(bounds, true);
         setTimeout(() => blocks.delete(actionBlock), 0);
       }
     });
@@ -48,6 +52,9 @@ export function ios(view: ObjC.Object, options: ScreenshotOptions | undefined): 
     const png = new ObjC.Object(api.UIImagePNGRepresentation(image));
     const data: NativePointer = png.bytes();
     return data.readByteArray(png.length())!;
+  }).finally(() => {
+    view?.release();
+    keyWindow?.release();
   });
 };
 
